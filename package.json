@@ -12,5 +12,8 @@
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
     "vite-plugin-glsl": "^1.1.2"
+  },
+  "dependencies": {
+    "cuon-matrix-ts": "^1.1.0"
   }
 }

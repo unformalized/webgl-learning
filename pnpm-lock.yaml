@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+dependencies:
+  cuon-matrix-ts:
+    specifier: ^1.1.0
+    version: 1.1.0
+
 devDependencies:
   typescript:
     specifier: ^5.0.2
@@ -232,6 +237,10 @@ packages:
   /@types/estree@1.0.1:
     resolution: {integrity: sha512-LG4opVs2ANWZ1TJoKc937iMmNstM/d0ae1vNbnBvBhqCSezgVUOzcLCqbI5elV8Vy6WKwKjaqR+zO9VKirBBCA==}
     dev: true
+
+  /cuon-matrix-ts@1.1.0:
+    resolution: {integrity: sha512-pShUTIrCJ/1enJGuHmqnzD0cGoF4CFxgYsY58VOdQP2UQblqmBiBw7LwMEjw3+P5224wPNh/qJQqDkzqAoe5KQ==}
+    dev: false
 
   /esbuild@0.18.20:
     resolution: {integrity: sha512-ceqxoedUrcayh7Y7ZX6NdbbDzGROiyVBgC4PriJThBKSVPWnnFHZAkfI1lJT8QFkOwH4qOS2SJkS4wvpGl8BpA==}
