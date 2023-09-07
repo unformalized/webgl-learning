@@ -52,14 +52,10 @@ export const run = () => {
   const u_FragColor = gl.getUniformLocation(program, "u_FragColor");
 
   if (!u_FragColor) {
-    console.log(
-      "Failed to get the storage location of u_FragColor from webGL program"
-    );
+    console.log("Failed to get the storage location of u_FragColor from webGL program");
     return;
   }
   gl.uniform4f(u_FragColor, 1.0, 0.0, 0.0, 1.0);
 
   gl.drawArrays(gl.TRIANGLES, 0, n);
 };
-
-run();

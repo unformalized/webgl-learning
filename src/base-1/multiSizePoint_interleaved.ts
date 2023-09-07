@@ -1,15 +1,16 @@
 import { initWebGL } from "../util";
-import { Mat4 } from "cuon-matrix-ts";
 
 const vertexShader = /*glsl*/ `
 // attribute 用于传递顶点着色器变量数据
 attribute vec4 a_Position;
-uniform mat4 u_ModelMatrix;
+attribute float a_PointSize;
 
 void main(){
-    gl_Position = u_ModelMatrix * a_Position;
+    gl_Position = a_Position;
+    gl_PointSize = a_PointSize;
 }
 `;
+
 const fragShader = /*glsl*/ `
 // attribute 用于传递顶点着色器变量数据
 precision mediump float;
@@ -25,28 +26,41 @@ void main(){
 // 缓冲区对象是 WebGL 系统里的一块内存区域，用于保存顶点数据，供顶点着色器使用
 
 const initVertexBuffer = (gl: WebGLRenderingContext, program: WebGLProgram) => {
-  const vertices = new Float32Array([0.0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+  // 将点的坐标和大小放在同一个缓存中
+  const verticesSize = new Float32Array(
+    // prettier-ignore
+    [
+      0.0, 0.5, 10.0, // 第一个点
+      -0.5, -0.5, 20.0,
+      0.5, -0.5, 30.0,
+    ]
+  );
+  const perSize = verticesSize.BYTES_PER_ELEMENT;
   const n = 3;
 
   const vertexBuffer = gl.createBuffer();
-  if (!vertexBuffer) {
-    console.error("Failed to create vertex buffer object!");
+  const sizeBuffer = gl.createBuffer();
+  if (!vertexBuffer || !sizeBuffer) {
+    console.error("Failed to create vertex or size buffer object!");
     return -1;
   }
 
+  // bindBuffer -> bufferData -> vertexAttribPointer -> enableVertexAttribArray 顺序不能乱，不能并行执行
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
   // 向缓冲区写入数据
-  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
+  gl.bufferData(gl.ARRAY_BUFFER, verticesSize, gl.STATIC_DRAW);
   const a_Position = gl.getAttribLocation(program, "a_Position");
-
   // 将缓冲区中的对象分配给 a_position
-  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-
+  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, perSize * 3, 0);
   // 连接 a_Position 变量和分配给它的缓冲区对象
   gl.enableVertexAttribArray(a_Position);
 
+  gl.bindBuffer(gl.ARRAY_BUFFER, sizeBuffer);
+  const a_PointSize = gl.getAttribLocation(program, "a_PointSize");
+  gl.bufferData(gl.ARRAY_BUFFER, verticesSize, gl.STATIC_DRAW);
+  // 从 verticesSize buffer 中获取数据，已 perSize * 3 为一组，大小为 1，从每组的 perSize * 2 之后（偏移）取数据
+  gl.vertexAttribPointer(a_PointSize, 1, gl.FLOAT, false, perSize * 3, perSize * 2);
+  gl.enableVertexAttribArray(a_PointSize);
   return n;
 };
 
@@ -60,11 +74,6 @@ export const run = () => {
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT);
-  const angle = 78;
-  const mat4 = new Mat4();
-  // 矩阵先设置旋转，再平移，则图形是先平移再旋转（rotate * translate）* position
-  mat4.setRotate(angle, 0, 0, 1);
-  mat4.translate(0.5, 0, 0);
 
   const n = initVertexBuffer(gl, program);
 
@@ -74,16 +83,14 @@ export const run = () => {
   }
 
   const u_FragColor = gl.getUniformLocation(program, "u_FragColor");
-  const u_ModelMatrix = gl.getUniformLocation(program, "u_ModelMatrix");
 
-  if (!u_FragColor || !u_ModelMatrix) {
-    console.log("Failed to get the storage location of u_FragColor or u_CosB or u_SinB from webGL program");
+  if (!u_FragColor) {
+    console.log("Failed to get the storage location of u_FragColor from webGL program");
     return;
   }
 
   gl.uniform4f(u_FragColor, 1.0, 0.0, 0.0, 1.0);
-  gl.uniformMatrix4fv(u_ModelMatrix, false, mat4.elements);
 
   // gl.drawArrays(gl.TRIANGLE_FAN, 0, n);
-  gl.drawArrays(gl.TRIANGLES, 0, n);
+  gl.drawArrays(gl.POINTS, 0, n);
 };

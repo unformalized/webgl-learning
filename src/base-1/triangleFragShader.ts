@@ -1,6 +1,16 @@
 import { initWebGL } from "../util";
-import vertexShader from "./translate.vert";
-import fragShader from "./point.frag";
+import vertexShader from "./triangle.vert";
+
+const fragShader = /*glsl*/ `
+precision mediump float;
+// uniform 变量用于传递片元着色器变量
+uniform float u_Width;
+uniform float u_Height;
+
+void main(){
+  gl_FragColor = vec4(gl_FragCoord.x/u_Width, 0.0, gl_FragCoord.y/u_Height, 1.0);
+}
+`;
 
 // 现在我们开始同时绘制多个点，WebGL 提供缓冲区对象，它可以一次性传入多个顶点数据
 // 缓冲区对象是 WebGL 系统里的一块内存区域，用于保存顶点数据，供顶点着色器使用
@@ -49,16 +59,14 @@ export const run = () => {
     return;
   }
 
-  const u_FragColor = gl.getUniformLocation(program, "u_FragColor");
-  const u_Transform = gl.getUniformLocation(program, "u_Transform");
+  const u_Width = gl.getUniformLocation(program, "u_Width");
+  const u_Height = gl.getUniformLocation(program, "u_Height");
 
-  if (!u_FragColor || !u_Transform) {
-    console.log("Failed to get the storage location of u_FragColor or u_Transform from webGL program");
+  if (!u_Width || !u_Height) {
+    console.log("Failed to get the storage location of u_Width or u_Height from webGL program");
     return;
   }
-  gl.uniform4f(u_FragColor, 1.0, 0.0, 0.0, 1.0);
-  gl.uniform4f(u_Transform, 0.5, 0.5, 0.0, 0.0);
+  gl.uniform1f(u_Width, el.width);
 
-  // gl.drawArrays(gl.TRIANGLE_FAN, 0, n);
   gl.drawArrays(gl.TRIANGLES, 0, n);
 };
